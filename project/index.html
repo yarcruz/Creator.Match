@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Convoca — Conecta creadores y producción de eventos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* ----------  TOKENS  ---------- */
+  :root {
+    --canvas:      oklch(0.988 0.004 85);
+    --canvas-2:    oklch(0.965 0.006 85);
+    --panel:       oklch(1 0 0);
+    --ink:         oklch(0.20 0.006 75);
+    --ink-soft:    oklch(0.44 0.008 75);
+    --ink-faint:   oklch(0.62 0.01 75);
+    --line:        oklch(0.90 0.006 80);
+    --line-soft:   oklch(0.94 0.005 80);
+
+    --accent:      oklch(0.52 0.20 264);
+    --accent-ink:  oklch(0.40 0.18 264);
+    --accent-wash: oklch(0.95 0.04 264);
+    --on-accent:   oklch(0.99 0.01 264);
+
+    --r-sm: 8px;
+    --r:    12px;
+    --r-lg: 20px;
+    --r-xl: 28px;
+
+    --shadow-sm: 0 1px 2px oklch(0.2 0.01 75 / 0.05);
+    --shadow:    0 2px 8px oklch(0.2 0.01 75 / 0.06), 0 1px 2px oklch(0.2 0.01 75 / 0.04);
+    --shadow-lg: 0 18px 50px -18px oklch(0.2 0.01 75 / 0.22);
+
+    --sans: "Hanken Grotesk", system-ui, sans-serif;
+    --serif: "Newsreader", Georgia, serif;
+
+    /* density — overwritten by JS tweak */
+    --gap: 24px;
+    --pad: 28px;
+    --maxw: 1200px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: var(--sans);
+    background: var(--canvas);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    line-height: 1.5;
+  }
+  #root { min-height: 100%; }
+
+  ::selection { background: var(--accent-wash); color: var(--accent-ink); }
+
+  h1,h2,h3,h4 { font-family: var(--serif); font-weight: 400; line-height: 1.04; letter-spacing: -0.01em; color: var(--ink); }
+  .serif { font-family: var(--serif); }
+  .sans  { font-family: var(--sans); }
+
+  /* editorial display */
+  .display {
+    font-family: var(--serif);
+    font-weight: 400;
+    line-height: 0.98;
+    letter-spacing: -0.018em;
+    text-wrap: balance;
+  }
+  .display em { font-style: italic; }
+  .accent-ink { color: var(--accent); }
+
+  /* brand wordmark inside body copy */
+  .brand-mark {
+    color: var(--accent);
+    font-style: italic;
+    font-weight: 600;
+    font-family: var(--serif);
+    letter-spacing: -0.01em;
+  }
+  html[data-theme="moderno"] .brand-mark { font-style: normal; font-weight: 700; }
+
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  input, textarea, select { font-family: inherit; font-size: inherit; color: inherit; }
+  a { color: inherit; text-decoration: none; }
+
+  .eyebrow {
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  /* scrollbars */
+  *::-webkit-scrollbar { width: 10px; height: 10px; }
+  *::-webkit-scrollbar-thumb { background: var(--line); border-radius: 99px; border: 3px solid var(--canvas); }
+  *::-webkit-scrollbar-track { background: transparent; }
+
+  /* striped placeholder for imagery */
+  .ph {
+    background-color: var(--canvas-2);
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent, transparent 9px,
+      oklch(0.88 0.006 80 / 0.6) 9px, oklch(0.88 0.006 80 / 0.6) 10px
+    );
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-faint);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px; letter-spacing: 0.04em;
+    text-align: center;
+    overflow: hidden;
+  }
+  .ph span { background: var(--canvas); padding: 3px 8px; border-radius: 99px; border: 1px solid var(--line); }
+
+  .fade-in { animation: fade-in 0.45s cubic-bezier(0.2,0.7,0.2,1) both; }
+  @keyframes fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+
+  /* ----------  THEME: MODERNO  ---------- */
+  html[data-theme="moderno"] {
+    --canvas:      oklch(0.992 0.003 255);
+    --canvas-2:    oklch(0.963 0.005 255);
+    --panel:       oklch(1 0 0);
+    --ink:         oklch(0.155 0.014 265);
+    --ink-soft:    oklch(0.40 0.013 265);
+    --ink-faint:   oklch(0.57 0.012 265);
+    --line:        oklch(0.905 0.006 265);
+    --line-soft:   oklch(0.945 0.005 265);
+    --serif: "Space Grotesk", system-ui, sans-serif;
+    --r-sm: 10px; --r: 14px; --r-lg: 22px; --r-xl: 32px;
+    --shadow-sm: 0 1px 2px oklch(0.2 0.02 265 / 0.06);
+    --shadow:    0 6px 20px -6px oklch(0.2 0.03 265 / 0.12), 0 1px 2px oklch(0.2 0.02 265 / 0.05);
+    --shadow-lg: 0 28px 64px -22px oklch(0.2 0.03 265 / 0.30);
+  }
+  html[data-theme="moderno"] h1,
+  html[data-theme="moderno"] h2,
+  html[data-theme="moderno"] h3,
+  html[data-theme="moderno"] h4 { font-weight: 600; letter-spacing: -0.035em; line-height: 1.0; }
+  html[data-theme="moderno"] .display { font-weight: 700; letter-spacing: -0.042em; line-height: 0.94; }
+  html[data-theme="moderno"] .display em { font-style: normal; color: var(--accent); }
+  html[data-theme="moderno"] .eyebrow { letter-spacing: 0.1em; font-weight: 700; }
+  html[data-theme="moderno"] .ph { border-radius: 14px; }
+
+  /* ----------  RESPONSIVE  ---------- */
+  @media (max-width: 900px) {
+    .hero-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+    .how-grid { grid-template-columns: 1fr 1fr !important; }
+    .profile-grid { grid-template-columns: 1fr !important; gap: 28px !important; }
+    .flow-grid { grid-template-columns: 1fr !important; }
+    .msg-grid { grid-template-columns: 1fr !important; height: auto !important; }
+    .topnav-links { display: none !important; }
+    .rail { display: none !important; }
+  }
+  @media (max-width: 600px) {
+    .how-grid { grid-template-columns: 1fr !important; }
+  }
+</style>
+</head>
+<body style="font-family: &quot;Work Sans&quot;">
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <script type="text/babel" src="data.jsx"></script>
+  <script type="text/babel" src="ui.jsx"></script>
+  <script type="text/babel" src="screen-landing.jsx"></script>
+  <script type="text/babel" src="screen-explore.jsx"></script>
+  <script type="text/babel" src="screen-creator.jsx"></script>
+  <script type="text/babel" src="screen-event.jsx"></script>
+  <script type="text/babel" src="screen-events.jsx"></script>
+  <script type="text/babel" src="screen-dashboard.jsx"></script>
+  <script type="text/babel" src="screen-pricing.jsx"></script>
+  <script type="text/babel" src="app.jsx"></script>
+</body>
+</html>
