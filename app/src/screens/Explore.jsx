@@ -3,7 +3,7 @@ import {
   Avatar, Button, Card, Chip, Stars, Badge, LocationSelect, inputStyleSelect,
 } from '../components/ui.jsx';
 import {
-  CREATORS, CATEGORIES, MODALITIES, TIERS,
+  CREATORS, CATEGORIES, MODALITIES, TIERS, REVIEWS,
   catLabel, modeOf, tierOf, payPrefLabel, creatorById,
 } from '../data.js';
 
@@ -226,6 +226,7 @@ export function CreatorProfile({ id, go }) {
           </div>
 
           <h3 style={{ fontSize: 22, marginTop: 40, marginBottom: 16 }}>Portafolio y proyectos</h3>
+
           {c.projects && c.projects.length > 0 ? (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14 }}>
               {c.projects.map((p, i) => {
@@ -261,6 +262,43 @@ export function CreatorProfile({ id, go }) {
               ))}
             </div>
           )}
+
+          {(() => {
+            const creatorReviews = REVIEWS.filter(r => r.creatorId === c.id && r.by === "prod");
+            return (
+              <div style={{ marginTop: 44 }}>
+                <h3 style={{ fontSize: 22, marginBottom: 6 }}>Reseñas verificadas</h3>
+                {creatorReviews.length === 0 ? (
+                  <div style={{ padding: "22px 20px", borderRadius: "var(--r)", border: "1px solid var(--line-soft)",
+                    background: "var(--canvas-2)", color: "var(--ink-faint)", fontSize: 14, textAlign: "center" }}>
+                    <div style={{ fontSize: 22, marginBottom: 8 }}>✦</div>
+                    <div style={{ fontWeight: 600 }}>Aún sin reseñas</div>
+                    <div style={{ fontSize: 13, marginTop: 4, lineHeight: 1.5 }}>
+                      Las reseñas se habilitan una vez que ambas partes confirman el acuerdo de un evento.
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 14 }}>
+                    {creatorReviews.map(r => (
+                      <div key={r.id} style={{ padding: "16px 18px", borderRadius: "var(--r)",
+                        border: "1px solid var(--line)", background: "var(--panel)" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                          <Stars value={r.rating} count={0} />
+                          <Badge tone="green">✓ Trato verificado</Badge>
+                        </div>
+                        {r.text && (
+                          <p style={{ fontSize: 14.5, color: "var(--ink-soft)", lineHeight: 1.55 }}>{r.text}</p>
+                        )}
+                        <div style={{ fontSize: 12, color: "var(--ink-faint)", marginTop: 8 }}>
+                          Productor · {new Date(r.at).toLocaleDateString("es-PR", { year: "numeric", month: "short", day: "numeric" })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
 
         <div style={{ position: "sticky", top: 24 }}>

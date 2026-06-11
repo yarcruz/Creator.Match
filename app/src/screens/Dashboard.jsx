@@ -1,10 +1,83 @@
 import { useState } from 'react';
-import { Button, Card, Avatar, Badge } from '../components/ui.jsx';
-import { PROPOSALS, MATCHES, MESSAGES, CREATORS, EVENTS, creatorById, eventById } from '../data.js';
+import { Button, Card, Avatar, Badge, Stars } from '../components/ui.jsx';
+import { PROPOSALS, MATCHES, MESSAGES, CREATORS, EVENTS, AGREEMENTS, REVIEWS,
+  creatorById, eventById } from '../data.js';
 import { EventPreviewCard } from './Event.jsx';
 import { CreatorPreviewCard } from './Creator.jsx';
 
-function ActiveProjects({ role, onOpenChat }) {
+function AgreeChip({ label, done }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "7px 12px",
+      borderRadius: 8, border: `1px solid ${done ? "oklch(0.62 0.13 150)" : "var(--line)"}`,
+      background: done ? "oklch(0.96 0.04 150)" : "var(--canvas-2)", fontSize: 13 }}>
+      <span style={{ width: 16, height: 16, borderRadius: 99, display: "grid", placeItems: "center",
+        background: done ? "oklch(0.62 0.13 150)" : "var(--line)", fontSize: 10,
+        color: done ? "#fff" : "var(--ink-faint)", fontWeight: 700, flexShrink: 0 }}>
+        {done ? "✓" : "○"}
+      </span>
+      <span style={{ color: done ? "oklch(0.30 0.08 150)" : "var(--ink-soft)", fontWeight: done ? 600 : 400 }}>
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function ReviewModal({ proposal, role, onClose, onSubmit }) {
+  const [rating, setRating] = useState(0);
+  const [hov, setHov]       = useState(0);
+  const [text, setText]     = useState("");
+  const c  = creatorById(proposal.creator);
+  const e  = eventById(proposal.event);
+  const by = role === "productor" ? "prod" : "creator";
+
+  const send = () => {
+    if (!rating) return;
+    onSubmit({ by, creatorId: proposal.creator, eventId: proposal.event,
+      proposalId: proposal.id, rating, text: text.trim() });
+    onClose();
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "oklch(0 0 0 / 0.5)", zIndex: 9999,
+      display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ background: "var(--panel)", borderRadius: "var(--r-xl)", padding: 32,
+        width: "100%", maxWidth: 440, boxShadow: "var(--shadow-lg)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 6 }}>Dejar reseña</div>
+            <h3 style={{ fontSize: 20 }}>{c?.name}</h3>
+            <div style={{ fontSize: 13.5, color: "var(--ink-faint)", marginTop: 2 }}>{e?.title}</div>
+          </div>
+          <button onClick={onClose} style={{ fontSize: 22, color: "var(--ink-faint)", lineHeight: 1, padding: 4 }}>×</button>
+        </div>
+
+        <div style={{ display: "flex", gap: 6, marginBottom: 18 }}>
+          {[1,2,3,4,5].map(n => (
+            <button key={n} onMouseEnter={() => setHov(n)} onMouseLeave={() => setHov(0)} onClick={() => setRating(n)}
+              style={{ fontSize: 28, lineHeight: 1, color: n <= (hov || rating) ? "oklch(0.74 0.18 85)" : "var(--line)",
+                transition: "color 0.1s" }}>
+              ★
+            </button>
+          ))}
+        </div>
+
+        <textarea value={text} onChange={e => setText(e.target.value)}
+          placeholder="Cuéntanos sobre tu experiencia (opcional)…"
+          style={{ width: "100%", height: 100, padding: "12px 14px", borderRadius: 12,
+            border: "1px solid var(--line)", background: "var(--canvas-2)", fontSize: 14,
+            color: "var(--ink)", resize: "none", outline: "none", lineHeight: 1.5 }} />
+
+        <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
+          <Button full variant="ghost" onClick={onClose}>Cancelar</Button>
+          <Button full onClick={send} style={{ opacity: rating ? 1 : 0.45 }}>Publicar reseña</Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ActiveProjects({ role, onOpenChat, onConfirmAgree, onReview, onReviewClick }) {
   const open = PROPOSALS.filter(p => p.status === "aceptada");
   if (open.length === 0) return null;
   return (
@@ -13,30 +86,66 @@ function ActiveProjects({ role, onOpenChat }) {
         <h3 style={{ fontSize: 18 }}>Proyectos activos</h3>
         <Badge tone="green">{open.length} en curso</Badge>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px,1fr))", gap: "var(--gap)" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px,1fr))", gap: "var(--gap)" }}>
         {open.map(p => {
-          const c = creatorById(p.creator);
-          const e = eventById(p.event);
+          const c    = creatorById(p.creator);
+          const e    = eventById(p.event);
+          const ag   = AGREEMENTS[p.id] || { prod: false, creator: false };
+          const sealed = !!ag.cert;
+          const alreadyReviewed = REVIEWS.some(r => r.proposalId === p.id && r.by === (role === "productor" ? "prod" : "creator"));
+
           return (
             <Card key={p.id} pad style={{ "--pad": "20px", display: "flex", flexDirection: "column", gap: 12,
-              borderLeft: "3px solid oklch(0.62 0.13 150)" }}>
+              borderLeft: `3px solid ${sealed ? "var(--accent)" : "oklch(0.62 0.13 150)"}` }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
-                <Badge tone="green">● En curso</Badge>
+                <Badge tone={sealed ? "accent" : "green"}>{sealed ? "✦ Trato sellado" : "● En curso"}</Badge>
                 <span className="serif" style={{ fontSize: 20 }}>{p.amount}</span>
               </div>
               <div>
-                <div className="serif" style={{ fontSize: 19, lineHeight: 1.12 }}>{e.title}</div>
+                <div className="serif" style={{ fontSize: 19, lineHeight: 1.12 }}>{e?.title}</div>
                 <div style={{ fontSize: 13, color: "var(--ink-faint)", marginTop: 4 }}>
-                  {e.date}{e.time ? ` · ${e.time}` : ""} · {e.city}
+                  {e?.date}{e?.time ? ` · ${e.time}` : ""} · {e?.city}
                 </div>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, paddingTop: 12, borderTop: "1px solid var(--line-soft)" }}>
-                <Avatar name={c.name} hue={c.accent} size={34} src={c.photo} />
+
+              {sealed ? (
+                <div style={{ padding: "12px 14px", borderRadius: 10, background: "var(--accent-wash)",
+                  color: "var(--accent-ink)", fontSize: 13 }}>
+                  <div style={{ fontWeight: 700, marginBottom: 2 }}>✓ Acuerdo confirmado</div>
+                  <div style={{ fontFamily: "ui-monospace, monospace", letterSpacing: "0.06em", fontSize: 12.5 }}>
+                    Certificado {ag.cert}
+                  </div>
+                </div>
+              ) : (
+                <div style={{ padding: "12px 14px", borderRadius: 10, background: "var(--canvas-2)",
+                  border: "1px solid var(--line)", display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "var(--ink-faint)", textTransform: "uppercase",
+                    letterSpacing: "0.12em" }}>Confirmar acuerdo</div>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    <AgreeChip label="Productor confirmó" done={ag.prod} />
+                    <AgreeChip label="Creador confirmó"   done={ag.creator} />
+                  </div>
+                  <Button size="sm" full onClick={() => onConfirmAgree && onConfirmAgree(p.id, role === "productor" ? "prod" : "creator")}>
+                    Confirmar acuerdo
+                  </Button>
+                </div>
+              )}
+
+              <div style={{ display: "flex", alignItems: "center", gap: 10, paddingTop: 12,
+                borderTop: "1px solid var(--line-soft)" }}>
+                <Avatar name={c?.name} hue={c?.accent} size={34} src={c?.photo} />
                 <div style={{ flex: 1, minWidth: 0, fontSize: 13 }}>
-                  <div style={{ fontWeight: 600 }}>{role === "productor" ? c.name : e.org}</div>
+                  <div style={{ fontWeight: 600 }}>{role === "productor" ? c?.name : e?.org}</div>
                   <div style={{ color: "var(--ink-faint)", fontSize: 12 }}>{role === "productor" ? "Creador" : "Productor"}</div>
                 </div>
-                <Button size="sm" variant="soft" onClick={() => onOpenChat(p.creator)}>Abrir chat →</Button>
+                <div style={{ display: "flex", gap: 6 }}>
+                  {sealed && !alreadyReviewed && (
+                    <Button size="sm" variant="soft" onClick={() => onReviewClick && onReviewClick(p)}>
+                      ★ Reseña
+                    </Button>
+                  )}
+                  <Button size="sm" variant="ghost" onClick={() => onOpenChat(p.creator)}>Chat →</Button>
+                </div>
               </div>
             </Card>
           );
@@ -243,10 +352,11 @@ function MessagesTab({ go, initialCreator }) {
   );
 }
 
-export function Dashboard({ go, t, onAccept, monetize, dashInit, clearDashInit }) {
-  const [role, setRole] = useState(dashInit?.role || "productor");
-  const [tab, setTab] = useState(dashInit?.tab || "resumen");
+export function Dashboard({ go, t, onAccept, monetize, dashInit, onConfirmAgree, onReview }) {
+  const [role, setRole]         = useState(dashInit?.role || "productor");
+  const [tab, setTab]           = useState(dashInit?.tab || "resumen");
   const [msgCreator, setMsgCreator] = useState(null);
+  const [reviewProposal, setReviewProposal] = useState(null);
   const openChat = (creatorId) => { setMsgCreator(creatorId); setTab("mensajes"); };
 
   const navItems = role === "productor"
@@ -255,6 +365,12 @@ export function Dashboard({ go, t, onAccept, monetize, dashInit, clearDashInit }
 
   return (
     <div className="fade-in" style={{ maxWidth: "var(--maxw)", margin: "0 auto", padding: "32px clamp(20px,4vw,40px) 80px" }}>
+      {reviewProposal && (
+        <ReviewModal proposal={reviewProposal} role={role}
+          onClose={() => setReviewProposal(null)}
+          onSubmit={r => { onReview && onReview(r); setReviewProposal(null); }} />
+      )}
+
       {monetize && (
         <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 18px", marginBottom: 22,
           borderRadius: "var(--r-lg)", background: "var(--ink)", color: "var(--canvas)", flexWrap: "wrap" }}>
@@ -304,7 +420,8 @@ export function Dashboard({ go, t, onAccept, monetize, dashInit, clearDashInit }
         ))}
       </div>
 
-      <ActiveProjects role={role} onOpenChat={openChat} />
+      <ActiveProjects role={role} onOpenChat={openChat} onConfirmAgree={onConfirmAgree}
+        onReview={onReview} onReviewClick={setReviewProposal} />
 
       <div style={{ display: "flex", gap: 4, borderBottom: "1px solid var(--line)", marginBottom: 28 }}>
         {navItems.map(([k, lbl]) => (
@@ -317,9 +434,9 @@ export function Dashboard({ go, t, onAccept, monetize, dashInit, clearDashInit }
         ))}
       </div>
 
-      {tab === "resumen" && <MatchesTab role={role} go={go} />}
+      {tab === "resumen"    && <MatchesTab role={role} go={go} />}
       {tab === "propuestas" && <ProposalsTab role={role} onAccept={onAccept} onMessage={openChat} />}
-      {tab === "mensajes" && <MessagesTab go={go} initialCreator={msgCreator} />}
+      {tab === "mensajes"   && <MessagesTab go={go} initialCreator={msgCreator} />}
     </div>
   );
 }
