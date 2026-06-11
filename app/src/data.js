@@ -206,10 +206,23 @@ export const PAY_TYPES = [
   { id: "nopago", label: "No pagado", icon: "○" },
 ];
 
+// --- Mutable runtime state (agreements + reviews) ---
+// These are module-level objects mutated directly (same pattern as CREATORS/EVENTS).
+export const AGREEMENTS = {}; // { [proposalId]: { prod, creator, cert, at } }
+export const REVIEWS    = []; // { id, proposalId, by, creatorId, eventId, rating, text, at }
+
 // --- Helpers ---
 
 export function creatorById(id) { return CREATORS.find(c => c.id === id); }
 export function eventById(id)   { return EVENTS.find(e => e.id === id); }
+export function eventStatusOf(eventId) {
+  const props = PROPOSALS.filter(p => p.event === eventId);
+  const accepted = props.filter(p => p.status === "aceptada");
+  const sealed = accepted.some(p => AGREEMENTS[p.id]?.cert);
+  if (sealed)         return { id: "cerrado",  label: "Trato cerrado", tone: "accent" };
+  if (accepted.length) return { id: "asignado", label: "Asignado",     tone: "green" };
+  return                     { id: "abierto",   label: "Abierto",       tone: "neutral" };
+}
 export function catLabel(id)    { const c = CATEGORIES.find(x => x.id === id); return c ? c.label : id; }
 export function modeOf(id)      { return MODALITIES[id] || MODALITIES.colab; }
 export function tierOf(id)      { return TIERS[id] || TIERS.sencilla; }

@@ -31,6 +31,12 @@
   --maxw: 1200px;
 }
 
+/* Never transition background through var() — avoids a Chromium custom-property
+   transition bug that leaves bg stuck at a stale value on theme/mode switch. */
+*, *::before, *::after {
+  transition-property: transform, box-shadow, border-color, color, opacity, filter !important;
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
 body {
@@ -132,6 +138,117 @@ html[data-theme="moderno"] .display { font-weight: 700; letter-spacing: -0.042em
 html[data-theme="moderno"] .display em { font-style: normal; color: var(--accent); }
 html[data-theme="moderno"] .eyebrow { letter-spacing: 0.1em; font-weight: 700; }
 html[data-theme="moderno"] .ph { border-radius: 14px; }
+
+/* ----------  THEME: EDITORIAL  ---------- */
+html[data-theme="editorial"] .eyebrow {
+  display: inline-flex; align-items: center; white-space: nowrap;
+  color: var(--on-accent); background: var(--accent);
+  padding: 6px 13px 5px; border-radius: 99px;
+  letter-spacing: 0.1em; font-weight: 700;
+}
+html[data-theme="editorial"] .display em { color: var(--accent); }
+html[data-theme="editorial"] ::selection { background: var(--accent); color: var(--on-accent); }
+
+/* ----------  THEME: BEHANCE — image-grid, Manrope 800, blue  ---------- */
+html[data-theme="behance"] {
+  --sans:  "Manrope", system-ui, sans-serif;
+  --serif: "Manrope", system-ui, sans-serif;
+  --canvas:    oklch(1 0 0);
+  --canvas-2:  oklch(0.968 0.002 250);
+  --panel:     oklch(1 0 0);
+  --ink:       oklch(0.18 0.006 250);
+  --ink-soft:  oklch(0.47 0.008 250);
+  --ink-faint: oklch(0.62 0.008 250);
+  --line:      oklch(0.925 0.003 250);
+  --line-soft: oklch(0.958 0.002 250);
+  --r-sm: 6px; --r: 8px; --r-lg: 10px; --r-xl: 16px;
+  --shadow-sm: 0 1px 2px oklch(0.2 0.01 250 / 0.05);
+  --shadow:    0 6px 22px -10px oklch(0.2 0.02 250 / 0.16), 0 1px 2px oklch(0.2 0.01 250 / 0.04);
+  --shadow-lg: 0 20px 50px -20px oklch(0.2 0.02 250 / 0.22);
+}
+html[data-theme="behance"] h1, html[data-theme="behance"] h2,
+html[data-theme="behance"] h3, html[data-theme="behance"] h4 { font-family: var(--sans); font-weight: 800; letter-spacing: -0.03em; line-height: 1.08; }
+html[data-theme="behance"] .display { font-family: var(--sans); font-weight: 800; letter-spacing: -0.035em; line-height: 1.04; }
+html[data-theme="behance"] .display em { font-style: normal; color: var(--accent); }
+html[data-theme="behance"] .brand-mark { font-family: var(--sans); font-style: normal; font-weight: 800; color: var(--accent); letter-spacing: -0.02em; }
+html[data-theme="behance"] .eyebrow { color: var(--ink-faint); letter-spacing: 0.1em; font-weight: 700; }
+html[data-theme="behance"] .ph { border-radius: 6px; }
+html[data-theme="behance"] ::selection { background: var(--accent); color: var(--on-accent); }
+
+/* ----------  THEME: FIVERR — Plus Jakarta Sans, bold, green  ---------- */
+html[data-theme="fiverr"] {
+  --sans:  "Plus Jakarta Sans", system-ui, sans-serif;
+  --serif: "Plus Jakarta Sans", system-ui, sans-serif;
+  --canvas:    oklch(1 0 0);
+  --canvas-2:  oklch(0.972 0.003 230);
+  --panel:     oklch(1 0 0);
+  --ink:       oklch(0.18 0.012 250);
+  --ink-soft:  oklch(0.46 0.014 250);
+  --ink-faint: oklch(0.62 0.013 250);
+  --line:      oklch(0.915 0.005 240);
+  --line-soft: oklch(0.952 0.004 240);
+  --r-sm: 8px; --r: 10px; --r-lg: 14px; --r-xl: 22px;
+  --shadow-sm: 0 1px 2px oklch(0.2 0.02 250 / 0.06);
+  --shadow:    0 8px 24px -10px oklch(0.2 0.02 250 / 0.16), 0 1px 2px oklch(0.2 0.02 250 / 0.05);
+  --shadow-lg: 0 22px 54px -20px oklch(0.2 0.02 250 / 0.24);
+}
+html[data-theme="fiverr"] h1, html[data-theme="fiverr"] h2,
+html[data-theme="fiverr"] h3, html[data-theme="fiverr"] h4 { font-family: var(--sans); font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; }
+html[data-theme="fiverr"] .display { font-family: var(--sans); font-weight: 800; letter-spacing: -0.035em; line-height: 1.02; }
+html[data-theme="fiverr"] .display em { font-style: italic; color: var(--accent); }
+html[data-theme="fiverr"] .brand-mark { font-family: var(--sans); font-style: normal; font-weight: 800; color: var(--accent); letter-spacing: -0.02em; }
+html[data-theme="fiverr"] .eyebrow { color: var(--ink-faint); letter-spacing: 0.1em; font-weight: 700; }
+html[data-theme="fiverr"] .ph { border-radius: 12px; }
+html[data-theme="fiverr"] ::selection { background: var(--accent); color: var(--on-accent); }
+
+/* ----------  THEME: PREMIUM — Sora, gradient accents  ---------- */
+html[data-theme="premium"] {
+  --sans:  "Sora", system-ui, sans-serif;
+  --serif: "Sora", system-ui, sans-serif;
+  --canvas:    oklch(0.994 0.001 240);
+  --canvas-2:  oklch(0.968 0.004 235);
+  --panel:     oklch(1 0 0);
+  --ink:       oklch(0.19 0.018 252);
+  --ink-soft:  oklch(0.46 0.018 252);
+  --ink-faint: oklch(0.62 0.015 252);
+  --line:      oklch(0.912 0.006 240);
+  --line-soft: oklch(0.95 0.004 240);
+  --r-sm: 9px; --r: 12px; --r-lg: 16px; --r-xl: 24px;
+  --shadow-sm: 0 1px 2px oklch(0.2 0.03 250 / 0.06);
+  --shadow:    0 10px 30px -12px oklch(0.2 0.04 250 / 0.18), 0 1px 2px oklch(0.2 0.03 250 / 0.05);
+  --shadow-lg: 0 26px 60px -22px oklch(0.2 0.05 250 / 0.28);
+}
+html[data-theme="premium"] h1, html[data-theme="premium"] h2,
+html[data-theme="premium"] h3, html[data-theme="premium"] h4 { font-family: var(--sans); font-weight: 700; letter-spacing: -0.03em; line-height: 1.05; }
+html[data-theme="premium"] .display { font-family: var(--sans); font-weight: 700; letter-spacing: -0.035em; line-height: 1.02; }
+html[data-theme="premium"] .display em,
+html[data-theme="premium"] .brand-mark {
+  font-style: normal; font-weight: 700;
+  background: var(--accent-grad, var(--accent)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+html[data-theme="premium"] .eyebrow { color: var(--ink-faint); letter-spacing: 0.12em; font-weight: 700; }
+html[data-theme="premium"] .ph { border-radius: 14px; }
+html[data-theme="premium"] ::selection { background: var(--accent); color: var(--on-accent); }
+
+/* ----------  DARK MODE — layered on any theme  ---------- */
+html[data-mode="dark"] {
+  --canvas:    oklch(0.165 0.014 252);
+  --canvas-2:  oklch(0.205 0.016 252);
+  --panel:     oklch(0.212 0.017 254);
+  --ink:       oklch(0.96 0.006 250);
+  --ink-soft:  oklch(0.74 0.012 250);
+  --ink-faint: oklch(0.60 0.014 250);
+  --line:      oklch(1 0 0 / 0.11);
+  --line-soft: oklch(1 0 0 / 0.06);
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.4);
+  --shadow:    0 10px 30px -12px oklch(0 0 0 / 0.55);
+  --shadow-lg: 0 26px 60px -22px oklch(0 0 0 / 0.6);
+}
+html[data-mode="dark"] .ph {
+  background-color: var(--canvas-2);
+  background-image: repeating-linear-gradient(-45deg, transparent 0 9px, oklch(1 0 0 / 0.05) 9px 10px);
+}
+html[data-mode="dark"] .ph span { background: var(--panel); color: var(--ink-faint); }
 
 /* ----------  RESPONSIVE  ---------- */
 @media (max-width: 900px) {
